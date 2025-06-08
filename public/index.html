@@ -6,137 +6,87 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Welcome to Omegle.baby</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-ku5OjZxKXG3Xn+7ZF7qU5L+ov/Xkjc3bs2r2+o7jy7pW8A44jQjttESuOr7+7Q1N+Q2Vp+X0AiEInVb+RKW/wA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-ku5OjZxKXG3Xn+7ZF7qU9rIvLV+uP6K0i8M+z1Fd1WzlPZzVhL66fgWzTySXYFQ66i7MyU9Y/bP+YBZTGe/B7Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', sans-serif;
-      height: 100vh;
-      background: linear-gradient(135deg, #6e0dd0, #2e004f);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    form {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      text-align: center;
-      max-width: 320px;
-      width: 100%;
-    }
-    .section {
-      margin-bottom: 1.5rem;
-    }
-    .gender-select, .pref-select {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-    }
-    .option, .pref-option {
-      cursor: pointer;
-    }
-    .option-content, .pref-content {
-      padding: 0.75rem 1rem;
-      border: 2px solid #ccc;
-      border-radius: 6px;
-      transition: background 0.2s, color 0.2s;
-      color: #666;
-    }
-    input[type="radio"]:checked + .option-content,
-    input[type="checkbox"]:checked + .pref-content {
-      background: #6e0dd0;
-      color: #fff;
-      border-color: #6e0dd0;
-    }
-    #start-btn {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      background: #6e0dd0;
-      color: #fff;
-      font-size: 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-      width: 100%;
-    }
-    #start-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    /* your existing card styles… */
+    .checkbox-group label { display:flex; align-items:center; gap:0.5rem; }
+    .checkbox-group input { width:1rem; height:1rem; }
+    .btn-submit { width:100%; padding:0.75rem; background:#6e0dd0; color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer; }
+    .btn-submit:disabled { background:#b089f3; cursor:not-allowed; }
   </style>
 </head>
 <body>
-  <form id="entry-form">
-    <div class="section">
-      <div>Select your gender:</div>
+  <div class="card">
+    <h1>Welcome to Omegle.baby</h1>
+    <form id="entry-form">
       <div class="gender-select">
         <label class="option">
-          <input type="radio" name="gender" value="female" required hidden />
+          <input type="radio" name="gender" value="female" required />
           <div class="option-content">
-            <i class="fas fa-venus" style="color:#ff93d8;"></i>
+            <i class="fas fa-venus icon" style="color:#ff93d8;"></i>
             <span>Female</span>
           </div>
         </label>
         <label class="option">
-          <input type="radio" name="gender" value="male" hidden />
+          <input type="radio" name="gender" value="male" />
           <div class="option-content">
-            <i class="fas fa-mars" style="color:#7da8f8;"></i>
+            <i class="fas fa-mars icon" style="color:#93d7ff;"></i>
             <span>Male</span>
           </div>
         </label>
-      </div>
-    </div>
-
-    <div class="section">
-      <div>Who do you want to meet?</div>
-      <div class="pref-select">
-        <label class="pref-option">
-          <input type="checkbox" name="pref" value="female" hidden />
-          <div class="pref-content">
-            <i class="fas fa-venus" style="color:#ff93d8;"></i>
-            <span>Female</span>
-          </div>
-        </label>
-        <label class="pref-option">
-          <input type="checkbox" name="pref" value="male" hidden />
-          <div class="pref-content">
-            <i class="fas fa-mars" style="color:#7da8f8;"></i>
-            <span>Male</span>
+        <label class="option">
+          <input type="radio" name="gender" value="other" />
+          <div class="option-content">
+            <i class="fas fa-genderless icon" style="color:#c5c5c5;"></i>
+            <span>Other</span>
           </div>
         </label>
       </div>
-    </div>
 
-    <button id="start-btn" disabled>Start Chat</button>
-  </form>
+      <div class="checkbox-group">
+        <label>
+          <input type="checkbox" id="age" required />
+          I am over 18 years old
+        </label>
+        <label>
+          <input type="checkbox" id="tc" required />
+          I agree to the <a href="/terms.html" target="_blank">Terms &amp; Conditions</a>
+        </label>
+      </div>
+
+      <button type="submit" class="btn-submit" id="start-btn" disabled>Enter Chat</button>
+    </form>
+  </div>
 
   <script>
     const form = document.getElementById('entry-form');
     const btn  = document.getElementById('start-btn');
 
+    // only enable Enter Chat when all required fields are valid
     form.addEventListener('change', () => {
-      const genderSelected = !!form.gender.value;
-      const prefs = Array.from(form.querySelectorAll('input[name="pref"]:checked'));
-      btn.disabled = !(genderSelected && prefs.length > 0);
+      btn.disabled = !form.checkValidity();
     });
 
     form.addEventListener('submit', e => {
       e.preventDefault();
-      const gender = form.gender.value;
-      const prefs = Array.from(form.querySelectorAll('input[name="pref"]:checked'))
-                         .map(el => el.value);
-      sessionStorage.setItem('gender', gender);
-      sessionStorage.setItem('prefs', JSON.stringify(prefs));
 
+      // store gender + confirmations
+      const gender = form.gender.value;
+      sessionStorage.setItem('gender', gender);
+      sessionStorage.setItem('ageConfirmed', 'true');
+      sessionStorage.setItem('tcConfirmed', 'true');
+
+      // capture geolocation (fallback to "Unknown")
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           pos => {
-            const loc = `${pos.coords.latitude.toFixed(2)},${pos.coords.longitude.toFixed(2)}`;
-            sessionStorage.setItem('location', loc);
+            sessionStorage.setItem(
+              'location',
+              `${pos.coords.latitude.toFixed(4)},${pos.coords.longitude.toFixed(4)}`
+            );
             window.location.href = '/chat';
           },
-          () => {
+          _ => {
             sessionStorage.setItem('location', 'Unknown');
             window.location.href = '/chat';
           }

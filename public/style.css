@@ -1,8 +1,13 @@
-/* Reset & base */
+/* reset & base */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body, html { height: 100%; font-family: sans-serif; display: flex; flex-direction: column; }
+body, html {
+  height: 100%;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+}
 
-/* Header */
+/* header */
 header {
   background: #4A90E2;
   color: #fff;
@@ -12,30 +17,30 @@ header {
 header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
 header p  { opacity: 0.9; }
 
-/* Main flex container */
+/* main flex container */
 #container {
   flex: 1;
   display: flex;
   overflow: hidden;
 }
 
-/* Video column */
+/* video column */
 #video-column {
+  flex-shrink: 0;
+  width: 320px;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.5rem;
-  width: 320px;      /* fixes width to prevent overlap */
-  flex-shrink: 0;
 }
 .video-container {
   position: relative;
 }
 .video-container video {
   width: 300px;
-  height: 200px;
-  background: #000;
+  aspect-ratio: 4/3;
   object-fit: cover;
+  background: #000;
   border-radius: 4px;
 }
 .video-container button {
@@ -50,7 +55,7 @@ header p  { opacity: 0.9; }
   cursor: pointer;
 }
 
-/* Chat panel */
+/* chat panel */
 #chat-panel {
   flex: 1;
   display: flex;
@@ -105,7 +110,7 @@ header p  { opacity: 0.9; }
   cursor: not-allowed;
 }
 
-/* Footer */
+/* footer */
 footer {
   background: #f5f5f5;
   text-align: center;
@@ -119,7 +124,7 @@ footer a {
 }
 footer a:hover { text-decoration: underline; }
 
-/* Mobile layout */
+/* mobile layout */
 @media (max-width: 600px) {
   #container { flex-direction: column; }
   #video-column {

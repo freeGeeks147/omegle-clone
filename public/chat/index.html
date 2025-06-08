@@ -48,5 +48,14 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/script.js"></script>
+  <script>
+    // ensure gender exists, or redirect to entry
+    const gender = sessionStorage.getItem('gender');
+    if (!gender) {
+      window.location.href = '/';
+    }
+    // you can now use `gender` in your JS logic as needed
+    console.log('User gender:', gender);
+  </script>
 </body>
 </html>

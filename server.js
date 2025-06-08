@@ -1,6 +1,8 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const path = require('path');
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
@@ -10,17 +12,26 @@ let waiting = null;
 io.on('connection', socket => {
   console.log('User connected:', socket.id);
   if (waiting) {
-    // Pair with the waiting user
+    // Pair users for chat and video
     socket.partner = waiting;
     waiting.partner = socket;
-    waiting.emit('paired', { partnerId: socket.id });
-    socket.emit('paired', { partnerId: waiting.id });
+    // Notify both clients
+    waiting.emit('start');
+    socket.emit('start');
     waiting = null;
   } else {
     waiting = socket;
     socket.emit('waiting');
   }
 
+  // Socket.io signaling for WebRTC
+  socket.on('signal', data => {
+    if (socket.partner) {
+      socket.partner.emit('signal', data);
+    }
+  });
+
+  // Text messages
   socket.on('message', msg => {
     if (socket.partner) socket.partner.emit('message', msg);
   });
@@ -36,7 +47,7 @@ io.on('connection', socket => {
   });
 });
 
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

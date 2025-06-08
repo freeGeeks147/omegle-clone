@@ -99,4 +99,8 @@ socket.on('message', msg => {
   messagesEl.scrollTop = messagesEl.scrollHeight;
 });
 
-socket.on('partner-disconnected', () => { alert('Partner disconnected'); location.reload(); });
+socket.on('partner-disconnected', () => {
+  // Automatically reload the page silently when partner disconnects
+  location.reload();
+});
+});

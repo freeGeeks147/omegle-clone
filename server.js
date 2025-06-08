@@ -20,14 +20,8 @@ io.on('connection', socket => {
     socket.emit('waiting');
   }
 
-  socket.on('signal', data => {
-    if (socket.partner) socket.partner.emit('signal', data);
-  });
-
-  socket.on('message', msg => {
-    if (socket.partner) socket.partner.emit('message', msg);
-  });
-
+  socket.on('signal', data => socket.partner && socket.partner.emit('signal', data));
+  socket.on('message', msg => socket.partner && socket.partner.emit('message', msg));
   socket.on('disconnect', () => {
     if (socket.partner) socket.partner.emit('partner-disconnected');
     if (waiting === socket) waiting = null;

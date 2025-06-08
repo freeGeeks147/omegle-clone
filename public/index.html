@@ -1,15 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Omegle babes</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Omegle Clone</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="status">Connecting...</div>
-  <div id="chat" style="display:none;">
-    <div id="messages" style="height:300px;overflow:auto;border:1px solid #ccc;padding:5px;margin-bottom:10px;"></div>
-    <input id="input" autocomplete="off" placeholder="Type a message..." style="width:80%;padding:5px;" />
-  </div>
+  <header>
+    <div class="logo">OmegleClone</div>
+    <nav>
+      <button data-tab="video" class="active">Video Chat</button>
+      <button data-tab="text">Message</button>
+      <button data-tab="history">History</button>
+    </nav>
+  </header>
+  <main>
+    <section id="video" class="tab-content">
+      <div id="status">Connecting...</div>
+      <div id="videos" class="hidden">
+        <video id="localVideo" autoplay muted></video>
+        <video id="remoteVideo" autoplay></video>
+      </div>
+    </section>
+
+    <section id="text" class="tab-content hidden">
+      <div id="text-status">Waiting for partner...</div>
+      <div id="chat" class="hidden">
+        <div id="messages"></div>
+        <input id="input" placeholder="Type a message...">
+      </div>
+    </section>
+
+    <section id="history" class="tab-content hidden">
+      <h2>Chat History</h2>
+      <p>No previous sessions.</p>
+    </section>
+  </main>
+
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 </body>

@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       // Capture compressed video + audio
       localStream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 1280, height: 960, frameRate: { max: 25 } },
+        video: { width: 640, height: 480, frameRate: { max: 25 } },
         audio: true
       });
     } catch (err) {
@@ -69,7 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const sender = pc.addTrack(track, localStream);
       if (track.kind === 'video' && sender.setParameters) {
         const params = sender.getParameters();
-        params.encodings = [{ maxBitrate: 150_000 }];
+        // Increase bitrate to improve quality
+      params.encodings = [{ maxBitrate: 500_000 }];
         sender.setParameters(params);
       }
     });
@@ -84,6 +85,33 @@ document.addEventListener('DOMContentLoaded', () => {
       await pc.setLocalDescription(offer);
       socket.emit('signal', { sdp: pc.localDescription });
     }
+
+    // === Adaptive Bitrate Logic ===
+    let lastBytesSent = 0;
+    setInterval(async () => {
+      const sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
+      if (!sender || !sender.getParameters) return;
+      const params = sender.getParameters();
+      const stats = await sender.getStats();
+      stats.forEach(report => {
+        if (report.type === 'outbound-rtp' && report.kind === 'video') {
+          const bytesSent = report.bytesSent;
+          const bitrate = (bytesSent - lastBytesSent) * 8; // bits per second since last interval
+          lastBytesSent = bytesSent;
+          // Simple adaptation: target around 400kbps
+          let targetBitrate = params.encodings[0].maxBitrate || 500_000;
+          if (bitrate < targetBitrate * 0.8) {
+            // network poor: reduce by 10%
+            targetBitrate = Math.max(100_000, targetBitrate * 0.9);
+          } else if (bitrate > targetBitrate * 1.2) {
+            // network good: increase by 10%
+            targetBitrate = Math.min(1_000_000, targetBitrate * 1.1);
+          }
+          params.encodings[0].maxBitrate = Math.floor(targetBitrate);
+          sender.setParameters(params);
+        }
+      });
+    }, 3000);
 
     // Fullscreen toggles
     [localVideo, remoteVideo].forEach(videoEl => {

@@ -1,106 +1,130 @@
-const socket = io();
-const statusEl = document.getElementById('status');
-const messagesEl = document.getElementById('messages');
-const inputEl = document.getElementById('input');
-const sendBtn = document.getElementById('send-btn');
-const nextBtn = document.getElementById('next-btn');
-const localVideo = document.getElementById('localVideo');
-const remoteVideo = document.getElementById('remoteVideo');
-const volumeSlider = document.getElementById('volume-slider');
+document.addEventListener('DOMContentLoaded', () => {
+  const socket = io();
+  const statusEl = document.getElementById('status');
+  const messagesEl = document.getElementById('messages');
+  const inputEl = document.getElementById('input');
+  const sendBtn = document.getElementById('send-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const localVideo = document.getElementById('localVideo');
+  const remoteVideo = document.getElementById('remoteVideo');
+  const volumeSlider = document.getElementById('volume-slider');
 
-let pc;
-let localStream;
-const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+  let pc;
+  let localStream;
+  const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-// Single signal handler
-socket.on('signal', async data => {
-  if (!pc) return;
-  try {
-    if (data.sdp) {
-      await pc.setRemoteDescription(data.sdp);
-      if (pc.remoteDescription.type === 'offer') {
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        socket.emit('signal', { sdp: pc.localDescription });
+  // Single signal handler
+  socket.on('signal', async data => {
+    if (!pc) return;
+    try {
+      if (data.sdp) {
+        await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+        if (pc.remoteDescription.type === 'offer') {
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          socket.emit('signal', { sdp: pc.localDescription });
+        }
+      } else if (data.candidate) {
+        await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
       }
-    } else if (data.candidate) {
-      await pc.addIceCandidate(data.candidate);
-    }
-  } catch (e) {
-    console.error('Signal error:', e);
-  }
-});
-
-socket.on('waiting', () => statusEl.innerText = 'Waiting for partner...');
-
-socket.on('start', async ({ initiator }) => {
-  statusEl.style.display = 'none';
-
-  // Capture compressed video + audio
-  localStream = await navigator.mediaDevices.getUserMedia({
-    video: { width: 300, height: 200, frameRate: { max: 10 } },
-    audio: true
-  });
-  localVideo.srcObject = localStream;
-  localVideo.muted = true;
-
-  // Setup remote stream
-  const remoteStream = new MediaStream();
-  remoteVideo.srcObject = remoteStream;
-  remoteVideo.muted = false;
-
-  // Peer connection
-  pc = new RTCPeerConnection(config);
-  localStream.getTracks().forEach(track => {
-    const sender = pc.addTrack(track, localStream);
-    if (track.kind === 'video' && sender.setParameters) {
-      const params = sender.getParameters();
-      params.encodings = [{ maxBitrate: 150_000 }];
-      sender.setParameters(params);
+    } catch (e) {
+      console.error('Signal error:', e);
     }
   });
 
-  pc.onicecandidate = ({ candidate }) => candidate && socket.emit('signal', { candidate });
-  pc.ontrack = e => e.streams[0] && e.streams[0].getTracks().forEach(t => remoteStream.addTrack(t));
+  socket.on('waiting', () => {
+    statusEl.innerText = 'Waiting for partner...';
+  });
 
-  if (initiator) {
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    socket.emit('signal', { sdp: pc.localDescription });
-  }
+  socket.on('start', async ({ initiator }) => {
+    statusEl.style.display = 'none';
 
-  // Fullscreen toggles
-  [localVideo, remoteVideo].forEach(v => v.addEventListener('dblclick', () => v.requestFullscreen()));
+    try {
+      // Capture compressed video + audio
+      localStream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 300, height: 200, frameRate: { max: 10 } },
+        audio: true
+      });
+    } catch (err) {
+      console.error('Could not access media devices.', err);
+      statusEl.innerText = 'Error accessing camera/microphone';
+      return;
+    }
 
-  // Volume control
-  volumeSlider.oninput = () => remoteVideo.volume = parseFloat(volumeSlider.value);
-});
+    localVideo.srcObject = localStream;
+    localVideo.muted = true;
 
-// Chat controls
-sendBtn.onclick = () => {
-  const text = inputEl.value.trim();
-  if (!text) return;
-  socket.emit('message', text);
-  const msg = document.createElement('div');
-  msg.className = 'message self';
-  msg.innerText = text;
-  messagesEl.appendChild(msg);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-  inputEl.value = '';
-};
+    // Setup remote stream
+    const remoteStream = new MediaStream();
+    remoteVideo.srcObject = remoteStream;
+    remoteVideo.muted = false;
 
-nextBtn.onclick = () => location.reload();
+    // Peer connection
+    pc = new RTCPeerConnection(config);
 
-socket.on('message', msg => {
-  const el = document.createElement('div');
-  el.className = 'message other';
-  el.innerText = msg;
-  messagesEl.appendChild(el);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-});
+    // Add local tracks and limit bitrate
+    localStream.getTracks().forEach(track => {
+      const sender = pc.addTrack(track, localStream);
+      if (track.kind === 'video' && sender.setParameters) {
+        const params = sender.getParameters();
+        params.encodings = [{ maxBitrate: 150_000 }];
+        sender.setParameters(params);
+      }
+    });
 
-socket.on('partner-disconnected', () => {
-  // Automatically reload the page silently when partner disconnects
-  location.reload();
-});
+    pc.onicecandidate = ({ candidate }) => candidate && socket.emit('signal', { candidate });
+    pc.ontrack = event => {
+      event.streams[0].getTracks().forEach(t => remoteStream.addTrack(t));
+    };
+
+    if (initiator) {
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      socket.emit('signal', { sdp: pc.localDescription });
+    }
+
+    // Fullscreen toggles
+    [localVideo, remoteVideo].forEach(videoEl => {
+      videoEl.addEventListener('dblclick', () => {
+        if (videoEl.requestFullscreen) videoEl.requestFullscreen();
+      });
+    });
+
+    // Volume control
+    volumeSlider.oninput = () => {
+      remoteVideo.volume = parseFloat(volumeSlider.value);
+    };
+  });
+
+  // Chat controls
+  sendBtn.addEventListener('click', () => {
+    const text = inputEl.value.trim();
+    if (!text) return;
+    socket.emit('message', text);
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'message self';
+    msgDiv.innerText = text;
+    messagesEl.appendChild(msgDiv);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    inputEl.value = '';
+  });
+
+  nextBtn.addEventListener('click', () => {
+    if (pc) pc.close();
+    location.reload();
+  });
+
+  socket.on('message', msg => {
+    const el = document.createElement('div');
+    el.className = 'message other';
+    el.innerText = msg;
+    messagesEl.appendChild(el);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  });
+
+  socket.on('partner-disconnected', () => {
+    // Silent reload
+    if (pc) pc.close();
+    location.reload();
+  });
 });

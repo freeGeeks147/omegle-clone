@@ -1,17 +1,20 @@
 const express = require('express');
-const http = require('http');
+const http    = require('http');
 const { Server } = require('socket.io');
-const path = require('path');
+const path    = require('path');
 
-const app = express();
+const app    = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io     = new Server(server);
+
 let waiting = null;
+
 io.on('connection', socket => {
+  // pairing logic
   if (waiting) {
-    socket.partner = waiting;
-    waiting.partner = socket;
-    waiting.emit('start', { initiator: false });
+    socket.partner       = waiting;
+    waiting.partner      = socket;
+    waiting.emit('start',{ initiator: false });
     socket.emit('start', { initiator: true });
     waiting = null;
   } else {
@@ -19,8 +22,17 @@ io.on('connection', socket => {
     socket.emit('waiting');
   }
 
-  socket.on('signal', data => socket.partner && socket.partner.emit('signal', data));
-  socket.on('message', msg => socket.partner && socket.partner.emit('message', msg));
+  // relay signaling & chat
+  socket.on('signal',   data => socket.partner && socket.partner.emit('signal', data));
+  socket.on('message',  msg  => socket.partner && socket.partner.emit('message', msg));
+
+  // relay user info
+  socket.on('share-info', info => {
+    if (socket.partner) {
+      socket.partner.emit('partner-info', info);
+    }
+  });
+
   socket.on('disconnect', () => {
     if (socket.partner) socket.partner.emit('partner-disconnected');
     if (waiting === socket) waiting = null;

@@ -8,19 +8,32 @@ const remoteVideo = document.getElementById('remoteVideo');
 let pc, localStream;
 const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-// Pairing
-socket.on('waiting', () => statusEl.innerText = 'Waiting for a partner...');
+socket.on('waiting', () => {
+  statusEl.innerText = 'Waiting for partner...';
+});
+
 socket.on('start', async ({ initiator }) => {
   statusEl.style.display = 'none';
   // get media
   localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
   localVideo.srcObject = localStream;
+
+  // remote stream
   const remoteStream = new MediaStream();
   remoteVideo.srcObject = remoteStream;
+
   pc = new RTCPeerConnection(config);
-  localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-  pc.onicecandidate = e => e.candidate && socket.emit('signal', e);
-  pc.ontrack = e => remoteStream.addTrack(e.track);
+  localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+  // correct ICE candidate emit
+  pc.onicecandidate = ({ candidate }) => {
+    if (candidate) socket.emit('signal', { candidate });
+  };
+
+  pc.ontrack = ({ track }) => {
+    remoteStream.addTrack(track);
+  };
+
   socket.on('signal', async data => {
     if (data.sdp) {
       await pc.setRemoteDescription(data.sdp);
@@ -33,29 +46,42 @@ socket.on('start', async ({ initiator }) => {
       await pc.addIceCandidate(data.candidate);
     }
   });
+
   if (initiator) {
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
     socket.emit('signal', { sdp: pc.localDescription });
   }
+
+  // fullscreen on dblclick
+  [localVideo, remoteVideo].forEach(v => {
+    v.addEventListener('dblclick', () => v.requestFullscreen());
+  });
 });
 
-// Text chat
 socket.on('message', msg => {
-  const d = document.createElement('div'); d.className = 'message other'; d.innerText = msg;
-  messagesEl.appendChild(d); messagesEl.scrollTop = messagesEl.scrollHeight;
+  const div = document.createElement('div');
+  div.className = 'message other';
+  div.innerText = msg;
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
 });
+
 inputEl.addEventListener('keydown', e => {
   if (e.key === 'Enter' && inputEl.value.trim()) {
     socket.emit('message', inputEl.value);
-    const d = document.createElement('div'); d.className = 'message self'; d.innerText = inputEl.value;
-    messagesEl.appendChild(d); messagesEl.scrollTop = messagesEl.scrollHeight;
+    const div = document.createElement('div');
+    div.className = 'message self';
+    div.innerText = inputEl.value;
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
     inputEl.value = '';
   }
 });
 
-// Next button reloads for new partner
 nextBtn.addEventListener('click', () => location.reload());
 
-// Disconnect
-socket.on('partner-disconnected', () => { alert('Partner disconnected'); location.reload(); });
+socket.on('partner-disconnected', () => {
+  alert('Partner disconnected');
+  location.reload();
+});

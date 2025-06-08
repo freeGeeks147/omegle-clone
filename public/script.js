@@ -8,26 +8,29 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!gender || !ageOK || !tcOK) {
     return window.location.href = '/';
   }
+  (async () => {
+    // --- reverse‐geocode lat/lon → country name, then connect socket ---
+    let country = 'Unknown';
+    if (rawLoc.includes(',')) {
+      const [lat, lon] = rawLoc.split(',').map(s => s.trim());
+      try {
+        const resp = await fetch(
+          `https://api.bigdatacloud.net/data/reverse-geocode-client` +
+          `?latitude=${encodeURIComponent(lat)}` +
+          `&longitude=${encodeURIComponent(lon)}` +
+          `&localityLanguage=en`
+        );
+        const data = await resp.json();
+        country = data.countryName || country;
+      } catch (err) {
+        console.warn('Reverse-geocode error:', err);
+      }
+    } else {
+      country = rawLoc;
+    }
 
-  // --- reverse-geocode lat/lon → country name ---
-  let country = 'Unknown';
-  if (rawLoc.includes(',')) {
-    const [lat, lon] = rawLoc.split(',').map(s => s.trim());
-    fetch(
-      `https://api.bigdatacloud.net/data/reverse-geocode-client` +
-      `?latitude=${encodeURIComponent(lat)}` +
-      `&longitude=${encodeURIComponent(lon)}` +
-      `&localityLanguage=en`
-    )
-    .then(r => r.json())
-    .then(data => country = data.countryName || country)
-    .catch(_ => {});
-  } else {
-    country = rawLoc;
-  }
+    const socket = io({ auth: { gender, location: country } });
 
-  // --- open socket with your info ---
-  const socket = io({ auth: { gender, location: country } });
 
   // --- UI elements ---
   const statusEl    = document.getElementById('status');

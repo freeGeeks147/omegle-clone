@@ -1,18 +1,100 @@
-<!-- public/index.html -->
+<!-- /public/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Welcome to Omegle.baby</title>
+  <!-- Google Fonts & FontAwesome -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-ku5OjZxKXG3Xn+7ZF7qU9rIvLV+uP6K0i8M+z1Fd1WzlPZzVhL66fgWzTySXYFQ66i7MyU9Y/bP+YBZTGe/B7Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha512-ku5OjZxKXG3Xn+7ZF7qU9rIvLV+uP6K0i8M+z1Fd1WzlPZzVhL66fgWzTySXYFQ66i7MyU9Y/bP+YBZTGe/B7Q=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
-    /* your existing card styles… */
-    .checkbox-group label { display:flex; align-items:center; gap:0.5rem; }
-    .checkbox-group input { width:1rem; height:1rem; }
-    .btn-submit { width:100%; padding:0.75rem; background:#6e0dd0; color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer; }
-    .btn-submit:disabled { background:#b089f3; cursor:not-allowed; }
+    /* reset */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* center the card */
+    body {
+      font-family: 'Inter', sans-serif;
+      height: 100vh;
+      background: linear-gradient(135deg, #6e0dd0, #2e004f);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* the white form container */
+    .card {
+      background: rgba(255,255,255,0.95);
+      border-radius: 16px;
+      width: 360px;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+    .card h1 {
+      margin-bottom: 1rem;
+      color: #2e004f;
+      font-size: 1.75rem;
+    }
+
+    /* gender radios */
+    .gender-select {
+      display: flex;
+      gap: 8px;
+      margin: 1rem 0;
+    }
+    .option { flex: 1; cursor: pointer; }
+    .option input { display: none; }
+    .option-content {
+      background: #f4f4f4;
+      border-radius: 12px;
+      padding: 0.75rem 0;
+      transition: background 0.2s, color 0.2s;
+      color: #666;
+    }
+    .option-content:hover { background: #e0d4f7; }
+    input:checked + .option-content {
+      background: #6e0dd0;
+      color: #fff;
+    }
+
+    /* checkboxes */
+    .checkbox-group {
+      text-align: left;
+      margin: 1rem 0;
+    }
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      font-size: 0.9rem;
+      color: #333;
+    }
+    .checkbox-group input {
+      margin-right: 0.5rem;
+      width: 1rem; height: 1rem;
+    }
+
+    /* submit button */
+    .btn-submit {
+      width: 100%;
+      padding: 0.75rem;
+      background: #6e0dd0;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-submit:disabled {
+      background: #b089f3;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -23,21 +105,21 @@
         <label class="option">
           <input type="radio" name="gender" value="female" required />
           <div class="option-content">
-            <i class="fas fa-venus icon" style="color:#ff93d8;"></i>
+            <i class="fas fa-venus" style="color:#ff93d8;"></i>
             <span>Female</span>
           </div>
         </label>
         <label class="option">
           <input type="radio" name="gender" value="male" />
           <div class="option-content">
-            <i class="fas fa-mars icon" style="color:#93d7ff;"></i>
+            <i class="fas fa-mars" style="color:#93d7ff;"></i>
             <span>Male</span>
           </div>
         </label>
         <label class="option">
           <input type="radio" name="gender" value="other" />
           <div class="option-content">
-            <i class="fas fa-genderless icon" style="color:#c5c5c5;"></i>
+            <i class="fas fa-genderless" style="color:#c5c5c5;"></i>
             <span>Other</span>
           </div>
         </label>
@@ -61,32 +143,23 @@
   <script>
     const form = document.getElementById('entry-form');
     const btn  = document.getElementById('start-btn');
-
-    // only enable Enter Chat when all required fields are valid
     form.addEventListener('change', () => {
       btn.disabled = !form.checkValidity();
     });
-
     form.addEventListener('submit', e => {
       e.preventDefault();
-
-      // store gender + confirmations
-      const gender = form.gender.value;
-      sessionStorage.setItem('gender', gender);
+      sessionStorage.setItem('gender', form.gender.value);
       sessionStorage.setItem('ageConfirmed', 'true');
       sessionStorage.setItem('tcConfirmed', 'true');
-
-      // capture geolocation (fallback to "Unknown")
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           pos => {
-            sessionStorage.setItem(
-              'location',
+            sessionStorage.setItem('location',
               `${pos.coords.latitude.toFixed(4)},${pos.coords.longitude.toFixed(4)}`
             );
             window.location.href = '/chat';
           },
-          _ => {
+          () => {
             sessionStorage.setItem('location', 'Unknown');
             window.location.href = '/chat';
           }

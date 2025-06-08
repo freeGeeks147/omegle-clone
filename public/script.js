@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       // Capture compressed video + audio
       localStream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 300, height: 200, frameRate: { max: 10 } },
+        video: { width: 300, height: 200, frameRate: { max: 20 } },
         audio: true
       });
     } catch (err) {
@@ -57,6 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup remote stream
     const remoteStream = new MediaStream();
     remoteVideo.srcObject = remoteStream;
+    // Mobile browsers may require explicit play call
+    remoteVideo.onloadedmetadata = () => remoteVideo.play().catch(() => { console.warn('Remote video play failed'); });
     remoteVideo.muted = false;
 
     // Peer connection
@@ -90,9 +92,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Volume control
+    // Volume control: toggle local microphone
     volumeSlider.oninput = () => {
-      remoteVideo.volume = parseFloat(volumeSlider.value);
+      const enabled = parseFloat(volumeSlider.value) > 0;
+      localStream.getAudioTracks().forEach(track => track.enabled = enabled);
     };
   });
 

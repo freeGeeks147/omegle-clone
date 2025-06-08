@@ -11,27 +11,27 @@ let waiting = null;
 io.on('connection', socket => {
   console.log('Connected:', socket.id);
   if (waiting) {
-    // Pair users
+    // pair users
     socket.partner = waiting;
     waiting.partner = socket;
-    // Notify text chat readiness
+    // text chat ready
     waiting.emit('paired');
     socket.emit('paired');
-    // Notify video chat readiness
-    waiting.emit('startVideo');
-    socket.emit('startVideo');
+    // video chat start: initiator flag
+    waiting.emit('startVideo', { initiator: false });
+    socket.emit('startVideo', { initiator: true });
     waiting = null;
   } else {
     waiting = socket;
     socket.emit('waiting');
   }
 
-  // WebRTC signaling
+  // Relay WebRTC signals
   socket.on('signal', data => {
     if (socket.partner) socket.partner.emit('signal', data);
   });
 
-  // Text messages
+  // Relay text messages
   socket.on('message', msg => {
     if (socket.partner) socket.partner.emit('message', msg);
   });
@@ -43,7 +43,6 @@ io.on('connection', socket => {
   });
 });
 
-// Serve static UI
 app.use(express.static(path.join(__dirname, 'public')));
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Listening on ${PORT}`));

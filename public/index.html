@@ -95,7 +95,7 @@
 <body>
   <div class="card">
     <h1>Welcome to Omegle.baby</h1>
-    <form id="entry-form" action="/chat" method="get">
+    <form id="entry-form">
       <div class="gender-select">
         <label class="option">
           <input type="radio" name="gender" value="female" required />
@@ -134,6 +134,14 @@
     const btn = document.getElementById('start-btn');
     form.addEventListener('change', () => {
       btn.disabled = !form.checkValidity();
+    });
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      // store gender in sessionStorage
+      const gender = form.gender.value;
+      sessionStorage.setItem('gender', gender);
+      // redirect without exposing query
+      window.location.href = '/chat';
     });
   </script>
 </body>

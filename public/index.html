@@ -19,11 +19,10 @@
     <section id="video" class="tab-content">
       <div id="status">Connecting...</div>
       <div id="videos" class="hidden">
-        <video id="localVideo" autoplay muted></video>
-        <video id="remoteVideo" autoplay></video>
+        <video id="localVideo" autoplay muted playsinline></video>
+        <video id="remoteVideo" autoplay playsinline></video>
       </div>
     </section>
-
     <section id="text" class="tab-content hidden">
       <div id="text-status">Waiting for partner...</div>
       <div id="chat" class="hidden">
@@ -31,13 +30,11 @@
         <input id="input" placeholder="Type a message...">
       </div>
     </section>
-
     <section id="history" class="tab-content hidden">
       <h2>Chat History</h2>
-      <p>No previous sessions.</p>
+      <p>No sessions yet.</p>
     </section>
   </main>
-
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 </body>

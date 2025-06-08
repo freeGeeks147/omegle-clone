@@ -1,25 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Omegle Clone</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
   <header>
     <h1>Omegle Clone</h1>
     <p>Instant, anonymous video & text connections</p>
   </header>
 
   <div id="container">
+
     <div id="video-column">
       <div class="video-container">
+        <!-- remote stream: controls ON, starts unmuted -->
         <video id="remoteVideo" autoplay playsinline controls></video>
-        
+        <button id="add-friend">Add Friend</button>
       </div>
       <div class="video-container">
+        <!-- local preview: muted so you don't echo -->
         <video id="localVideo" autoplay playsinline muted controls></video>
       </div>
     </div>
@@ -33,16 +35,17 @@
       <div id="status">Connecting...</div>
       <div id="messages"></div>
       <div id="controls">
-        <input id="input" placeholder="Type a message…">
+        <input id="input" placeholder="Type a message…" />
         <button id="send-btn" disabled>Send</button>
         <button id="next-btn">Next ▶</button>
       </div>
     </div>
+
   </div>
 
   <footer>
     By using this service, you agree to our
-    <a href="/terms.html" target="_blank">Terms & Conditions</a>
+    <a href="/terms.html" target="_blank">Terms &amp; Conditions</a>
     and
     <a href="/privacy.html" target="_blank">Privacy Policy</a>.
   </footer>

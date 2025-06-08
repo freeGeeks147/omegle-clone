@@ -107,8 +107,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // network good: increase by 10%
             targetBitrate = Math.min(1_000_000, targetBitrate * 1.1);
           }
-          params.encodings[0].maxBitrate = Math.floor(targetBitrate);
-          sender.setParameters(params);
+          const enc = params.encodings[0];
+            enc.maxBitrate = Math.floor(targetBitrate);
+            // dynamically adjust resolution if network is very poor
+            if (bitrate < targetBitrate * 0.5) {
+              enc.scaleResolutionDownBy = 2;
+            } else {
+              enc.scaleResolutionDownBy = 1;
+            }
+            params.encodings[0] = enc;
+            sender.setParameters(params);
         }
       });
     }, 3000);

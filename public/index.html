@@ -3,24 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Omegle Video Clone</title>
+  <title>Omegle Clone</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="container">
+
     <div id="video-column">
-      <div id="remote-container" class="video-container">
+      <div class="video-container">
         <video id="remoteVideo" autoplay playsinline></video>
         <button id="add-friend">Add Friend</button>
       </div>
-      <div id="local-container" class="video-container">
-        <video id="localVideo" autoplay muted playsinline></video>
+      <div class="video-container">
+        <video id="localVideo" autoplay playsinline muted></video>
       </div>
     </div>
+
     <div id="chat-panel">
-      <div id="header">
-        <span id="user-info">Meet someone new! Engage in a respectful chat 🌐 🎥</span>
-      </div>
+      <div id="header">Meet someone new! Respectful chat 🌐🎥</div>
       <div id="status">Connecting...</div>
       <div id="messages"></div>
       <div id="controls">
@@ -28,6 +28,7 @@
         <button id="next-btn">Next ▶</button>
       </div>
     </div>
+
   </div>
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>

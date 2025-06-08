@@ -1,37 +1,51 @@
-<!-- index.html -->
+<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Omegle.Baby</title>
+  <title>Omegle Clone</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
-  <header>
-    <h1>Omegle.baby</h1>
-    <p>Instant, anonymous video & text connections</p>
-  </header>
+  <!-- ENTRY FORM -->
+  <div id="entry-form">
+    <h2>Welcome</h2>
+    <form id="gatekeeper">
+      <label><input type="radio" name="gender" value="male" /> Male</label>
+      <label><input type="radio" name="gender" value="female" /> Female</label>
+      <div>
+        <label><input type="checkbox" id="age-check" /> I am over 18</label>
+      </div>
+      <div class="g-recaptcha"
+           data-sitekey="YOUR_SITE_KEY"
+           data-callback="onCaptchaSuccess"
+           data-expired-callback="onCaptchaExpired">
+      </div>
+      <button id="enter-btn" disabled>Enter</button>
+    </form>
+  </div>
 
-  <div id="container">
-
+  <!-- MAIN UI (hidden until gate passed) -->
+  <div id="container" style="display:none">
+    <header>
+      <h1>Omegle Clone</h1>
+      <p>Instant, anonymous video & text</p>
+    </header>
     <div id="video-column">
       <div class="video-container">
         <video id="remoteVideo" autoplay playsinline></video>
-        <input id="remote-volume" type="range" min="0" max="1" step="0.05" value="1" title="Partner volume"/>
+        <input id="remote-volume" type="range" min="0" max="1" step="0.05" value="1" />
       </div>
       <div class="video-container">
-          <video id="localVideo" autoplay playsinline muted></video>
-          <button id="mute-btn" title="Mute/Unmute mic">🎙️</button>
+        <video id="localVideo" autoplay playsinline muted></video>
+        <button id="mute-btn">🎙️</button>
       </div>
     </div>
-
     <div id="chat-panel">
-      <div id="chat-header">
-        <span>Meet someone new! 🌐🎥</span>
-        <!-- volume slider removed -->
-      </div>
-      <div id="status">Connecting...</div>
+      <div id="chat-header"><span>Meet someone new!</span></div>
+      <div id="status">Connecting…</div>
       <div id="messages"></div>
       <div id="controls">
         <input id="input" placeholder="Type a message…" />
@@ -39,15 +53,12 @@
         <button id="next-btn">Next ▶</button>
       </div>
     </div>
-
+    <footer>
+      By using this service you agree to our
+      <a href="/terms.html">Terms</a> &amp;
+      <a href="/privacy.html">Privacy</a>.
+    </footer>
   </div>
-
-  <footer>
-    We do not entertain person of age less than 18, By using this service, you agree to our
-    <a href="/terms.html" target="_blank">Terms &amp; Conditions</a>
-    and
-    <a href="/privacy.html" target="_blank">Privacy Policy</a>.
-  </footer>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>

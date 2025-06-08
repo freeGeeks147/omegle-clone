@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,30 +5,105 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Omegle.Baby</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Welcome-screen styling */
+    #welcome-screen {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    #welcome-screen .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 2rem;
+      width: 320px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      text-align: center;
+      font-family: sans-serif;
+    }
+    #welcome-screen h2 {
+      margin-bottom: 1rem;
+      color: #333;
+    }
+    #welcome-screen label {
+      display: block;
+      margin: 0.5rem 0;
+      cursor: pointer;
+      font-size: 0.95rem;
+      color: #444;
+    }
+    #welcome-screen input[type="radio"],
+    #welcome-screen input[type="checkbox"] {
+      margin-right: 0.5rem;
+    }
+    #welcome-screen .btn-start {
+      margin-top: 1.5rem;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    #welcome-screen .btn-start:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+    /* Hide main container until form submitted */
+    #container, header, footer {
+      visibility: hidden;
+    }
+  </style>
 </head>
 <body>
+  <div id="welcome-screen">
+    <div class="card">
+      <h2>Welcome to Omegle.baby</h2>
+      <form id="welcome-form">
+        <fieldset>
+          <legend>Select your gender:</legend>
+          <label><input type="radio" name="gender" value="male" required> Male</label>
+          <label><input type="radio" name="gender" value="female"> Female</label>
+          <label><input type="radio" name="gender" value="other"> Other</label>
+        </fieldset>
+        <label>
+          <input type="checkbox" id="age-check" required>
+          I confirm I am over 18 years old
+        </label>
+        <label>
+          <input type="checkbox" id="tc-check" required>
+          I agree to the <a href="/terms.html" target="_blank">Terms &amp; Conditions</a>
+        </label>
+        <button type="submit" class="btn-start" id="start-btn" disabled>Start Chatting</button>
+      </form>
+    </div>
+  </div>
+
   <header>
     <h1>Omegle.baby</h1>
-    <p>Instant, anonymous video & text connections</p>
+    <p>Instant, anonymous video &amp; text connections</p>
   </header>
 
   <div id="container">
-
     <div id="video-column">
       <div class="video-container">
         <video id="remoteVideo" autoplay playsinline></video>
         <input id="remote-volume" type="range" min="0" max="1" step="0.05" value="1" title="Partner volume"/>
       </div>
       <div class="video-container">
-          <video id="localVideo" autoplay playsinline muted></video>
-          <button id="mute-btn" title="Mute/Unmute mic">🎙️</button>
+        <video id="localVideo" autoplay playsinline muted></video>
+        <button id="mute-btn" title="Mute/Unmute mic">🎙️</button>
       </div>
     </div>
 
     <div id="chat-panel">
       <div id="chat-header">
         <span>Meet someone new! 🌐🎥</span>
-        <!-- volume slider removed -->
       </div>
       <div id="status">Connecting...</div>
       <div id="messages"></div>
@@ -39,17 +113,36 @@
         <button id="next-btn">Next ▶</button>
       </div>
     </div>
-
   </div>
 
   <footer>
-    We do not entertain person of age less than 18, By using this service, you agree to our
-    <a href="/terms.html" target="_blank">Terms &amp; Conditions</a>
-    and
+    We do not entertain persons under 18. By using this service, you agree to our
+    <a href="/terms.html" target="_blank">Terms &amp; Conditions</a> and
     <a href="/privacy.html" target="_blank">Privacy Policy</a>.
   </footer>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
+  <script>
+    // Enable start button only when all required inputs are valid
+    const form = document.getElementById('welcome-form');
+    const startBtn = document.getElementById('start-btn');
+    form.addEventListener('change', () => {
+      startBtn.disabled = !form.checkValidity();
+    });
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      // Hide welcome screen
+      document.getElementById('welcome-screen').style.display = 'none';
+      // Reveal main UI
+      document.querySelectorAll('#container, header, footer').forEach(el => {
+        el.style.visibility = 'visible';
+      });
+      // (Optional) You can read selected values:
+      // const gender = form.gender.value;
+      // ...
+    });
+  </script>
 </body>
 </html>

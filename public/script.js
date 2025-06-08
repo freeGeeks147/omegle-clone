@@ -1,71 +1,79 @@
 const socket = io();
+// Tab navigation
+document.querySelectorAll('header nav button').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('header nav button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(sec => sec.classList.add('hidden'));
+    document.getElementById(btn.dataset.tab).classList.remove('hidden');
+  };
+});
+
+// Video Chat Elements
 const statusEl = document.getElementById('status');
-const videoChat = document.getElementById('video-chat');
+const videosEl = document.getElementById('videos');
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
+
+// Text Chat Elements
+const textStatus = document.getElementById('text-status');
+const chatEl = document.getElementById('chat');
 const messagesEl = document.getElementById('messages');
 const inputEl = document.getElementById('input');
 
 let pc;
 const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-function addMessage(text, self) {
-  const div = document.createElement('div');
-  div.className = 'message';
-  div.style.textAlign = self ? 'right' : 'left';
-  div.innerText = text;
-  messagesEl.appendChild(div);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-}
+// === Socket Events ===
+socket.on('waiting', () => textStatus.innerText = 'Waiting for a partner...');
 
-socket.on('waiting', () => statusEl.innerText = 'Waiting for a partner...');
+socket.on('paired', () => {
+  textStatus.style.display = 'none';
+  chatEl.classList.remove('hidden');
+});
 
-socket.on('start', async () => {
+socket.on('message', msg => {
+  const d = document.createElement('div'); d.className = 'message'; d.innerText = msg;
+  messagesEl.appendChild(d); messagesEl.scrollTop = messagesEl.scrollHeight;
+});
+
+// === Video Setup ===
+socket.on('startVideo', async () => {
   statusEl.style.display = 'none';
-  videoChat.style.display = 'flex';
-
-  // Capture local media
+  videosEl.classList.remove('hidden');
   const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
   localVideo.srcObject = stream;
-
   pc = new RTCPeerConnection(config);
-  stream.getTracks().forEach(track => pc.addTrack(track, stream));
-
-  pc.onicecandidate = e => {
-    if (e.candidate) socket.emit('signal', { candidate: e.candidate });
-  };
-  pc.ontrack = e => { remoteVideo.srcObject = e.streams[0]; };
-
-  // Offer/answer logic
-  socket.on('signal', async msg => {
-    if (msg.sdp) {
-      await pc.setRemoteDescription(msg.sdp);
-      if (msg.sdp.type === 'offer') {
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
+  stream.getTracks().forEach(t => pc.addTrack(t, stream));
+  pc.onicecandidate = e => e.candidate && socket.emit('signal', e);
+  pc.ontrack = e => remoteVideo.srcObject = e.streams[0];
+  socket.on('signal', async data => {
+    if (data.sdp) {
+      await pc.setRemoteDescription(data.sdp);
+      if (data.sdp.type === 'offer') {
+        const ans = await pc.createAnswer();
+        await pc.setLocalDescription(ans);
         socket.emit('signal', { sdp: pc.localDescription });
       }
-    } else if (msg.candidate) {
-      await pc.addIceCandidate(msg.candidate);
+    } else {
+      await pc.addIceCandidate(data);
     }
   });
-
-  // Create offer
   const offer = await pc.createOffer();
   await pc.setLocalDescription(offer);
   socket.emit('signal', { sdp: pc.localDescription });
 });
 
-socket.on('message', msg => addMessage(msg, false));
+// === Text Chat Send ===
 inputEl.addEventListener('keydown', e => {
   if (e.key === 'Enter' && inputEl.value.trim()) {
     socket.emit('message', inputEl.value);
-    addMessage(inputEl.value, true);
+    const d = document.createElement('div'); d.className = 'message'; d.innerText = inputEl.value;
+    messagesEl.appendChild(d); messagesEl.scrollTop = messagesEl.scrollHeight;
     inputEl.value = '';
   }
 });
 
 socket.on('partner-disconnected', () => {
-  alert('Partner disconnected');
-  location.reload();
+  alert('Partner disconnected'); location.reload();
 });

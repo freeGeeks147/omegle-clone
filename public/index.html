@@ -7,16 +7,30 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="wrapper">
-    <div id="video-chat">
-      <video id="localVideo" autoplay muted playsinline></video>
-      <video id="remoteVideo" autoplay playsinline></video>
-    </div>
-    <div id="chat-panel">
+  <div id="container">
+
+    <aside id="video-column">
+      <div class="video-container" id="remote-container">
+        <video id="remoteVideo" autoplay playsinline></video>
+        <button id="add-friend">Add Friend</button>
+      </div>
+      <div class="video-container" id="local-container">
+        <video id="localVideo" autoplay muted playsinline></video>
+      </div>
+    </aside>
+
+    <section id="chat-panel">
+      <div id="header">
+        <span id="user-info">Meet a person&nbsp;–&nbsp;<strong>Rahul</strong> from <strong>India</strong>. Engage in a respectful and friendly chat! 🌐 🎥</span>
+      </div>
       <div id="status">Connecting...</div>
       <div id="messages"></div>
-      <input id="input" placeholder="Type a message...">
-    </div>
+      <div id="controls">
+        <input id="input" placeholder="Type a message...">
+        <button id="next-btn">Next ▶</button>
+      </div>
+    </section>
+
   </div>
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>

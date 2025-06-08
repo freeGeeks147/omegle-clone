@@ -6,29 +6,29 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-
 let waiting = null;
 
 io.on('connection', socket => {
-  console.log('User connected:', socket.id);
+  console.log('Connected:', socket.id);
   if (waiting) {
-    // Pair users for chat and video
+    // Pair users
     socket.partner = waiting;
     waiting.partner = socket;
-    // Notify both clients
-    waiting.emit('start');
-    socket.emit('start');
+    // Notify text chat readiness
+    waiting.emit('paired');
+    socket.emit('paired');
+    // Notify video chat readiness
+    waiting.emit('startVideo');
+    socket.emit('startVideo');
     waiting = null;
   } else {
     waiting = socket;
     socket.emit('waiting');
   }
 
-  // Socket.io signaling for WebRTC
+  // WebRTC signaling
   socket.on('signal', data => {
-    if (socket.partner) {
-      socket.partner.emit('signal', data);
-    }
+    if (socket.partner) socket.partner.emit('signal', data);
   });
 
   // Text messages
@@ -37,17 +37,13 @@ io.on('connection', socket => {
   });
 
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
-    if (socket.partner) {
-      socket.partner.emit('partner-disconnected');
-      socket.partner.partner = null;
-    } else if (waiting === socket) {
-      waiting = null;
-    }
+    console.log('Disconnected:', socket.id);
+    if (socket.partner) socket.partner.emit('partner-disconnected');
+    if (waiting === socket) waiting = null;
   });
 });
 
+// Serve static UI
 app.use(express.static(path.join(__dirname, 'public')));
-
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Listening on ${PORT}`));

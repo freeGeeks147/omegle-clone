@@ -1,53 +1,79 @@
-// script.js
+// public/script.js
 document.addEventListener('DOMContentLoaded', () => {
-  const socket      = io();
-  const statusEl    = document.getElementById('status');
-  const messagesEl  = document.getElementById('messages');
-  const inputEl     = document.getElementById('input');
-  const sendBtn     = document.getElementById('send-btn');
-  const nextBtn     = document.getElementById('next-btn');
-  const localVideo  = document.getElementById('localVideo');
-  const remoteVideo = document.getElementById('remoteVideo');
+  const gender = sessionStorage.getItem('gender');
+  const location = sessionStorage.getItem('location');
+  if (!gender || !location) {
+    window.location.href = '/';
+    return;
+  }
 
-  let pc, localStream;
-  const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+  const socket       = io({ auth: { gender, location } });
+  const statusEl     = document.getElementById('status');
+  const messagesEl   = document.getElementById('messages');
+  const inputEl      = document.getElementById('input');
+  const sendBtn      = document.getElementById('send-btn');
+  const nextBtn      = document.getElementById('next-btn');
+  const localVideo   = document.getElementById('localVideo');
+  const remoteVideo  = document.getElementById('remoteVideo');
+  const remoteVolume = document.getElementById('remote-volume');
+  const muteBtn      = document.getElementById('mute-btn');
+  const partnerInfoEl= document.getElementById('partner-info');
 
-  // enable send on input & send on Enter
+  let localStream;
+  let pc;
+  let isMuted = false;
+
+  // Enable send button
   inputEl.addEventListener('input', () => {
     sendBtn.disabled = !inputEl.value.trim();
   });
-  inputEl.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && inputEl.value.trim()) {
-      e.preventDefault();
-      sendBtn.click();
-    }
+
+  // Send text message
+  sendBtn.addEventListener('click', () => {
+    const msg = inputEl.value.trim();
+    if (!msg) return;
+    socket.emit('message', msg);
+    appendMessage('You', msg);
+    inputEl.value = '';
+    sendBtn.disabled = true;
   });
 
-  // Signaling
-  socket.on('signal', async data => {
-    if (!pc) return;
-    try {
-      if (data.sdp) {
-        await pc.setRemoteDescription(data.sdp);
-        if (pc.remoteDescription.type === 'offer') {
-          const ans = await pc.createAnswer();
-          await pc.setLocalDescription(ans);
-          socket.emit('signal', { sdp: pc.localDescription });
-        }
-      } else if (data.candidate) {
-        await pc.addIceCandidate(data.candidate);
-      }
-    } catch (e) { console.error(e); }
+  // Next button reloads page
+  nextBtn.addEventListener('click', () => {
+    window.location.reload();
+  });
+
+  // Remote volume control
+  remoteVolume.addEventListener('input', e => {
+    remoteVideo.volume = e.target.value;
+  });
+
+  // Mute/unmute local mic
+  muteBtn.addEventListener('click', () => {
+    if (!localStream) return;
+    isMuted = !isMuted;
+    localStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
+    muteBtn.textContent = isMuted ? '🔇' : '🎙️';
   });
 
   socket.on('waiting', () => {
-    statusEl.innerText = 'Waiting for partner...';
+    statusEl.innerText = 'Waiting for partner…';
   });
 
-  socket.on('start', async ({ initiator }) => {
+  socket.on('start', async ({ initiator, partner }) => {
     statusEl.style.display = 'none';
 
-    // 1) getUserMedia
+    // Display partner gender & location
+    const icon = partner.gender === 'male'   ? '♂️'
+               : partner.gender === 'female' ? '♀️'
+               : '';
+    const label = partner.gender
+      ? partner.gender.charAt(0).toUpperCase() + partner.gender.slice(1)
+      : 'Unknown';
+    partnerInfoEl.innerText = `${icon} ${label}, at ${partner.location}`;
+    partnerInfoEl.style.display = 'block';
+
+    // Get local media
     try {
       localStream = await navigator.mediaDevices.getUserMedia({
         video: { width: 640, height: 480, frameRate: { max: 25 } },
@@ -55,97 +81,63 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     } catch (err) {
       statusEl.innerText = 'Camera/mic access error';
-      return console.error(err);
+      console.error(err);
+      return;
     }
-
     localVideo.srcObject = localStream;
-    localVideo.muted      = true;
-    // LOCAL MIC TOGGLE
-    const muteBtn = document.getElementById('mute-btn');
-    let micOn = true;
-    muteBtn.addEventListener('click', () => {
-      micOn = !micOn;
-      localStream.getAudioTracks().forEach(t => t.enabled = micOn);
-      muteBtn.textContent = micOn ? '🎙️' : '🔇';
+
+    // Setup RTCPeerConnection
+    pc = new RTCPeerConnection({
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
     });
+    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
-    // 2) prepare remote stream
-    const remoteStream = new MediaStream();
-    remoteVideo.srcObject = remoteStream;
-    // PARTNER VOLUME CONTROL
-    const volSlider = document.getElementById('remote-volume');
-    remoteVideo.volume = parseFloat(volSlider.value);
-    volSlider.addEventListener('input', () => {
-     remoteVideo.volume = parseFloat(volSlider.value);
+    pc.addEventListener('track', e => {
+      if (remoteVideo.srcObject !== e.streams[0]) {
+        remoteVideo.srcObject = e.streams[0];
+      }
     });
-    remoteVideo.onloadedmetadata = () => {
-      remoteVideo.play().catch(()=>{});
-    };
-
-    // 3) create RTCPeerConnection
-    pc = new RTCPeerConnection(config);
-
-    // 4) add local tracks + throttle bitrate
-    localStream.getTracks().forEach(track => {
-      const sender = pc.addTrack(track, localStream);
-      if (track.kind === 'video' && sender.setParameters) {
-        const p = sender.getParameters();
-        p.encodings = [{ maxBitrate: 500_000 }];
-        sender.setParameters(p);
+    pc.addEventListener('icecandidate', e => {
+      if (e.candidate) {
+        socket.emit('signal', { candidate: e.candidate });
       }
     });
 
-    pc.onicecandidate = ({ candidate }) =>
-      candidate && socket.emit('signal', { candidate });
-
-    pc.ontrack = evt =>
-      evt.streams[0].getTracks().forEach(t => remoteStream.addTrack(t));
-
-    // 5) offer/answer
-    if (initiator) {
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      socket.emit('signal', { sdp: pc.localDescription });
-    }
-
-    // 7) fullscreen on double-click
-    [localVideo, remoteVideo].forEach(v => {
-      v.addEventListener('dblclick', () => {
-        v.requestFullscreen?.();
-      });
+    socket.on('signal', async data => {
+      if (data.sdp) {
+        await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+        if (data.sdp.type === 'offer') {
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          socket.emit('signal', { sdp: pc.localDescription });
+        }
+      } else if (data.candidate) {
+        try {
+          await pc.addIceCandidate(data.candidate);
+        } catch (err) {
+          console.error('ICE candidate add error:', err);
+        }
+      }
     });
 
-    // listen for peer mute/unmute
-    socket.on('mute',   () => remoteVideo.muted = true);
-    socket.on('unmute', () => remoteVideo.muted = false);
+    if (initiator) {
+      try {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        socket.emit('signal', { sdp: pc.localDescription });
+      } catch (err) {
+        console.error('Offer creation error:', err);
+      }
+    }
+
+    socket.on('message', msg => appendMessage('Stranger', msg));
+    socket.on('partner-disconnected', () => appendMessage('System', 'Partner disconnected'));
   });
 
-  // CHAT
-  sendBtn.addEventListener('click', () => {
-    const txt = inputEl.value.trim();
-    if (!txt) return;
-    socket.emit('message', txt);
-    append('You', txt);
-    inputEl.value = '';
-    sendBtn.disabled = true;
-  });
-  socket.on('message', msg => append('Peer', msg));
-
-  nextBtn.addEventListener('click', () => {
-    pc?.close();
-    location.reload();
-  });
-
-  socket.on('partner-disconnected', () => {
-    pc?.close();
-    location.reload();
-  });
-
-  function append(who, text) {
-    const div = document.createElement('div');
-    div.className = who === 'You' ? 'message self' : 'message other';
-    div.innerText = text;
-    messagesEl.appendChild(div);
+  function appendMessage(sender, message) {
+    const el = document.createElement('div');
+    el.innerHTML = `<strong>${sender}:</strong> ${message}`;
+    messagesEl.appendChild(el);
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 });

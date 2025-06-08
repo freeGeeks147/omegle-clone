@@ -1,4 +1,4 @@
-<!-- /public/index.html -->
+<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +7,7 @@
   <title>Welcome to Omegle.baby</title>
   <!-- Google Fonts & FontAwesome -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-ku5OjZxKXG3Xn+7ZF7qU9rIvLV+uP6K0i8M+z1Fd1WzlPZzVhL66fgWzTySXYFQ66i7MyU9Y/bP+YBZTGe/B7Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-ku5OjZxKXG3Xn+7ZF7qU5L+ov/Xkjc3bs2r2+o7jy7pW8A44jQjttESuOr7+7Q1N+Q2Vp+X0AiEInVb+RKW/wA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -18,130 +18,102 @@
       align-items: center;
       justify-content: center;
     }
-    .card {
-      background: rgba(255,255,255,0.95);
-      border-radius: 16px;
-      width: 360px;
+    form {
+      background: #fff;
       padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       text-align: center;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-    }
-    .card h1 {
-      margin-bottom: 1rem;
-      color: #2e004f;
-      font-size: 1.75rem;
     }
     .gender-select {
       display: flex;
-      gap: 8px;
-      margin: 1rem 0;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
     }
     .option {
-      flex: 1;
       cursor: pointer;
     }
-    .option input { display: none; }
-    .option .icon {
-      font-size: 1.5rem;
-    }
-    .option span {
-      display: block;
-      margin-top: 0.25rem;
-      font-size: 0.9rem;
-    }
     .option-content {
-      background: #f4f4f4;
-      border-radius: 12px;
-      padding: 0.75rem 0;
+      padding: 1rem;
+      border: 2px solid #ccc;
+      border-radius: 6px;
       transition: background 0.2s, color 0.2s;
       color: #666;
     }
-    .option-content:hover { background: #e0d4f7; }
     input:checked + .option-content {
       background: #6e0dd0;
       color: #fff;
+      border-color: #6e0dd0;
     }
-    .checkbox-group {
-      text-align: left;
-      margin: 1rem 0;
-    }
-    .checkbox-group label {
-      display: flex;
-      align-items: center;
-      margin-bottom: 0.75rem;
-      font-size: 0.9rem;
-      color: #333;
-    }
-    .checkbox-group input {
-      margin-right: 0.5rem;
-      width: 1rem;
-      height: 1rem;
-    }
-    .btn-submit {
-      width: 100%;
-      padding: 0.75rem;
-      background: #6e0dd0;
+    #start-btn {
+      padding: 0.75rem 1.5rem;
       border: none;
-      border-radius: 8px;
+      background: #6e0dd0;
       color: #fff;
       font-size: 1rem;
-      font-weight: 600;
+      border-radius: 4px;
       cursor: pointer;
-      transition: background 0.2s;
     }
-    .btn-submit:disabled { background: #b089f3; cursor: not-allowed; }
+    #start-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Welcome to Omegle.baby</h1>
-    <form id="entry-form">
-      <div class="gender-select">
-        <label class="option">
-          <input type="radio" name="gender" value="female" required />
-          <div class="option-content">
-            <i class="fas fa-venus icon" style="color:#ff93d8;"></i>
-            <span>Female</span>
-          </div>
-        </label>
-        <label class="option">
-          <input type="radio" name="gender" value="male" />
-          <div class="option-content">
-            <i class="fas fa-mars icon" style="color:#93d7ff;"></i>
-            <span>Male</span>
-          </div>
-        </label>
-        <label class="option">
-          <input type="radio" name="gender" value="other" />
-          <div class="option-content">
-            <i class="fas fa-genderless icon" style="color:#c5c5c5;"></i>
-            <span>Other</span>
-          </div>
-        </label>
-      </div>
-
-      <div class="checkbox-group">
-        <label><input type="checkbox" id="age" required /> I am over 18 years old</label>
-        <label><input type="checkbox" id="tc" required /> I agree to the <a href="/terms.html" target="_blank">Terms &amp; Conditions</a></label>
-      </div>
-
-      <button type="submit" class="btn-submit" id="start-btn" disabled>Enter Chat</button>
-    </form>
-  </div>
+  <form id="entry-form">
+    <div class="gender-select">
+      <label class="option">
+        <input type="radio" name="gender" value="female" required hidden />
+        <div class="option-content">
+          <i class="fas fa-venus icon" style="color:#ff93d8;"></i>
+          <span>Female</span>
+        </div>
+      </label>
+      <label class="option">
+        <input type="radio" name="gender" value="male" hidden />
+        <div class="option-content">
+          <i class="fas fa-mars icon" style="color:#7da8f8;"></i>
+          <span>Male</span>
+        </div>
+      </label>
+    </div>
+    <button id="start-btn" disabled>Start Chat</button>
+  </form>
 
   <script>
     const form = document.getElementById('entry-form');
-    const btn = document.getElementById('start-btn');
+    const btn  = document.getElementById('start-btn');
+
+    // only enable once a gender is selected
     form.addEventListener('change', () => {
       btn.disabled = !form.checkValidity();
     });
+
     form.addEventListener('submit', e => {
       e.preventDefault();
-      // store gender in sessionStorage
       const gender = form.gender.value;
       sessionStorage.setItem('gender', gender);
-      // redirect without exposing query
-      window.location.href = '/chat';
+
+      // Capture geolocation (lat,lon); fallback to "Unknown"
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            const loc = `${pos.coords.latitude.toFixed(2)}, ${pos.coords.longitude.toFixed(2)}`;
+            sessionStorage.setItem('location', loc);
+            window.location.href = '/chat';
+          },
+          err => {
+            console.warn('Geolocation failed:', err);
+            sessionStorage.setItem('location', 'Unknown');
+            window.location.href = '/chat';
+          }
+        );
+      } else {
+        sessionStorage.setItem('location', 'Unknown');
+        window.location.href = '/chat';
+      }
     });
   </script>
 </body>

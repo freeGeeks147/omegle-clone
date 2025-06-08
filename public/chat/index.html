@@ -1,11 +1,10 @@
-
-<!-- /public/chat/index.html -->
+<!-- public/chat/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Omegle.Baby Chat</title>
+  <title>Omegle.baby Chat</title>
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
@@ -29,6 +28,8 @@
     <div id="chat-panel">
       <div id="chat-header">
         <span>Meet someone new! 🌐🎥</span>
+        <!-- partner-info will be filled in dynamically -->
+        <div id="partner-info" style="display:none;"></div>
       </div>
       <div id="status">Connecting...</div>
       <div id="messages"></div>
@@ -49,13 +50,10 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="/script.js"></script>
   <script>
-    // ensure gender exists, or redirect to entry
-    const gender = sessionStorage.getItem('gender');
-    if (!gender) {
+    // ensure we've got a gender/location, or bounce back
+    if (!sessionStorage.getItem('gender') || !sessionStorage.getItem('location')) {
       window.location.href = '/';
     }
-    // you can now use `gender` in your JS logic as needed
-    console.log('User gender:', gender);
   </script>
 </body>
 </html>

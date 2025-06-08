@@ -142,3 +142,16 @@ footer a:hover { text-decoration: underline; }
     margin-top: 0.5rem;
   }
 }
+
+/* Chat-header already defined */
+#chat-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+/* New partner info styling */
+#partner-info {
+  font-size: 0.9rem;
+  color: #333;
+}

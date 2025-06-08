@@ -8,7 +8,46 @@ document.addEventListener('DOMContentLoaded', () => {
   const nextBtn     = document.getElementById('next-btn');
   const localVideo  = document.getElementById('localVideo');
   const remoteVideo = document.getElementById('remoteVideo');
+  const statusEl      = document.getElementById('status');
+  const messagesEl    = document.getElementById('messages');
+  const inputEl       = document.getElementById('input');
+  const sendBtn       = document.getElementById('send-btn');
+  const nextBtn       = document.getElementById('next-btn');
+  const localVideo    = document.getElementById('localVideo');
+  const remoteVideo   = document.getElementById('remoteVideo');
+  const remoteInfo    = document.getElementById('remote-info');
+  const remoteGender  = document.getElementById('remote-gender');
+  const remoteLoc     = document.getElementById('remote-location');
+  const remoteIcon    = document.getElementById('remote-gender-icon');
 
+  // retrieve own data
+  const myGender = sessionStorage.getItem('gender') || 'other';
+  let myLocation = 'Unknown';
+
+  // geo-lookup
+  fetch('https://ipapi.co/json/')    
+    .then(r => r.json())            
+    .then(d => { myLocation = `${d.city}, ${d.country_name}`; })
+    .catch(() => console.warn('Geo failed'));
+
+  // WebRTC setup omitted for brevity...
+  socket.on('start', async ({ initiator }) => {
+    // share our info
+    socket.emit('share-info', { gender: myGender, location: myLocation });
+    statusEl.style.display = 'none';
+    // ... existing getUserMedia, PeerConnection, etc.
+  });
+
+  // display partner info
+  socket.on('partner-info', ({ gender, location }) => {
+    remoteGender.textContent   = gender.charAt(0).toUpperCase() + gender.slice(1);
+    remoteLoc.textContent      = location;
+    remoteIcon.className =
+      gender === 'male'   ? 'fas fa-mars' :
+      gender === 'female' ? 'fas fa-venus' :
+                             'fas fa-genderless';
+    remoteInfo.style.display = 'flex';
+  });
   let pc, localStream;
   const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 

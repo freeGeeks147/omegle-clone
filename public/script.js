@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       // Capture compressed video + audio
       localStream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 300, height: 200, frameRate: { max: 20 } },
+        video: { width: 640, height: 480, frameRate: { max: 25 } },
         audio: true
       });
     } catch (err) {

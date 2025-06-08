@@ -60,12 +60,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     localVideo.srcObject = localStream;
     localVideo.muted      = true;
+    // LOCAL MIC TOGGLE
+    const muteBtn = document.getElementById('mute-btn');
+    let micOn = true;
+    muteBtn.addEventListener('click', () => {
+      micOn = !micOn;
+      localStream.getAudioTracks().forEach(t => t.enabled = micOn);
+      muteBtn.textContent = micOn ? '🎙️' : '🔇';
+    });
 
     // 2) prepare remote stream
     const remoteStream = new MediaStream();
     remoteVideo.srcObject = remoteStream;
-    // start muted; will unmute on peer's signal
-    remoteVideo.muted = true;
+    // PARTNER VOLUME CONTROL
+    const volSlider = document.getElementById('remote-volume');
+    remoteVideo.volume = parseFloat(volSlider.value);
+    volSlider.addEventListener('input', () => {
+     remoteVideo.volume = parseFloat(volSlider.value);
+    });
     remoteVideo.onloadedmetadata = () => {
       remoteVideo.play().catch(()=>{});
     };

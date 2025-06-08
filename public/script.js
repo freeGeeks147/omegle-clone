@@ -1,16 +1,27 @@
+// script.js
 document.addEventListener('DOMContentLoaded', () => {
-  const socket       = io();
-  const statusEl     = document.getElementById('status');
-  const messagesEl   = document.getElementById('messages');
-  const inputEl      = document.getElementById('input');
-  const sendBtn      = document.getElementById('send-btn');
-  const nextBtn      = document.getElementById('next-btn');
-  const localVideo   = document.getElementById('localVideo');
-  const remoteVideo  = document.getElementById('remoteVideo');
-  const volumeSlider = document.getElementById('volume-slider');
+  const socket      = io();
+  const statusEl    = document.getElementById('status');
+  const messagesEl  = document.getElementById('messages');
+  const inputEl     = document.getElementById('input');
+  const sendBtn     = document.getElementById('send-btn');
+  const nextBtn     = document.getElementById('next-btn');
+  const localVideo  = document.getElementById('localVideo');
+  const remoteVideo = document.getElementById('remoteVideo');
 
   let pc, localStream;
   const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+  // enable send on input & send on Enter
+  inputEl.addEventListener('input', () => {
+    sendBtn.disabled = !inputEl.value.trim();
+  });
+  inputEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && inputEl.value.trim()) {
+      e.preventDefault();
+      sendBtn.click();
+    }
+  });
 
   // Signaling
   socket.on('signal', async data => {
@@ -47,13 +58,14 @@ document.addEventListener('DOMContentLoaded', () => {
       return console.error(err);
     }
 
-    localVideo.srcObject  = localStream;
-    localVideo.muted       = true;
+    localVideo.srcObject = localStream;
+    localVideo.muted      = true;
 
     // 2) prepare remote stream
     const remoteStream = new MediaStream();
     remoteVideo.srcObject = remoteStream;
-    remoteVideo.muted     = false;
+    // start muted; will unmute on peer's signal
+    remoteVideo.muted = true;
     remoteVideo.onloadedmetadata = () => {
       remoteVideo.play().catch(()=>{});
     };
@@ -84,32 +96,27 @@ document.addEventListener('DOMContentLoaded', () => {
       socket.emit('signal', { sdp: pc.localDescription });
     }
 
-    // 6) adaptive bitrate (unchanged)...
-
-    // 7) fullscreen
+    // 7) fullscreen on double-click
     [localVideo, remoteVideo].forEach(v => {
       v.addEventListener('dblclick', () => {
         v.requestFullscreen?.();
       });
     });
 
-    // 8) VOLUME SLIDER now controls *remote* audio only
-    volumeSlider.oninput = () => {
-      const vol = parseFloat(volumeSlider.value);
-      remoteVideo.volume = vol;
-      remoteVideo.muted  = vol === 0;
-    };
+    // listen for peer mute/unmute
+    socket.on('mute',   () => remoteVideo.muted = true);
+    socket.on('unmute', () => remoteVideo.muted = false);
   });
 
-  // CHAT over Socket.io (or swap in DataChannel here)
+  // CHAT
   sendBtn.addEventListener('click', () => {
     const txt = inputEl.value.trim();
     if (!txt) return;
     socket.emit('message', txt);
     append('You', txt);
     inputEl.value = '';
+    sendBtn.disabled = true;
   });
-
   socket.on('message', msg => append('Peer', msg));
 
   nextBtn.addEventListener('click', () => {

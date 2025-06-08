@@ -11,13 +11,11 @@ let waiting = null;
 io.on('connection', socket => {
   console.log('Connected:', socket.id);
   if (waiting) {
-    // pair users
     socket.partner = waiting;
     waiting.partner = socket;
-    // text chat ready
     waiting.emit('paired');
     socket.emit('paired');
-    // video chat start: initiator flag
+    // start video: initiator flag
     waiting.emit('startVideo', { initiator: false });
     socket.emit('startVideo', { initiator: true });
     waiting = null;
@@ -26,12 +24,10 @@ io.on('connection', socket => {
     socket.emit('waiting');
   }
 
-  // Relay WebRTC signals
   socket.on('signal', data => {
     if (socket.partner) socket.partner.emit('signal', data);
   });
 
-  // Relay text messages
   socket.on('message', msg => {
     if (socket.partner) socket.partner.emit('message', msg);
   });

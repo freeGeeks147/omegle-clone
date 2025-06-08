@@ -1,3 +1,4 @@
+<!-- /public/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,45 +8,88 @@
   <!-- Google Fonts & FontAwesome -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-ku5OjZxKXG3Xn+7ZF7qU9rIvLV+uP6K0i8M+z1Fd1WzlPZzVhL66fgWzTySXYFQ66i7MyU9Y/bP+YBZTGe/B7Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="/style.css" />
   <style>
-    /* Inline for quick glance */
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; height:100vh;
-      background: linear-gradient(135deg,#6e0dd0,#2e004f);
-      display:flex;align-items:center;justify-content:center;
+    body {
+      font-family: 'Inter', sans-serif;
+      height: 100vh;
+      background: linear-gradient(135deg, #6e0dd0, #2e004f);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .card { background: rgba(255,255,255,0.95);border-radius:16px;
-      width:360px;padding:2rem;text-align:center;
-      box-shadow:0 8px 24px rgba(0,0,0,0.2);
+    .card {
+      background: rgba(255,255,255,0.95);
+      border-radius: 16px;
+      width: 360px;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
     }
-    .card h1 { margin-bottom:1rem;color:#2e004f;font-size:1.75rem; }
-    .gender-select { display:flex;gap:8px;margin:1rem 0; }
-    .option { flex:1; cursor:pointer; }
-    .option input { display:none; }
+    .card h1 {
+      margin-bottom: 1rem;
+      color: #2e004f;
+      font-size: 1.75rem;
+    }
+    .gender-select {
+      display: flex;
+      gap: 8px;
+      margin: 1rem 0;
+    }
+    .option {
+      flex: 1;
+      cursor: pointer;
+    }
+    .option input { display: none; }
+    .option .icon {
+      font-size: 1.5rem;
+    }
+    .option span {
+      display: block;
+      margin-top: 0.25rem;
+      font-size: 0.9rem;
+    }
     .option-content {
-      background:#f4f4f4;border-radius:12px;padding:0.75rem 0;
-      transition:background 0.2s,color 0.2s;color:#666;
+      background: #f4f4f4;
+      border-radius: 12px;
+      padding: 0.75rem 0;
+      transition: background 0.2s, color 0.2s;
+      color: #666;
     }
-    .option-content:hover { background:#e0d4f7; }
+    .option-content:hover { background: #e0d4f7; }
     input:checked + .option-content {
-      background:#6e0dd0;color:#fff;
+      background: #6e0dd0;
+      color: #fff;
     }
-    .icon { font-size:1.5rem; }
-    .option span { display:block;margin-top:0.25rem;font-size:0.9rem; }
-    .checkbox-group { text-align:left;margin:1rem 0; }
+    .checkbox-group {
+      text-align: left;
+      margin: 1rem 0;
+    }
     .checkbox-group label {
-      display:flex;align-items:center;margin-bottom:0.75rem;
-      font-size:0.9rem;color:#333;
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      font-size: 0.9rem;
+      color: #333;
     }
     .checkbox-group input {
-      margin-right:0.5rem;width:1rem;height:1rem;
+      margin-right: 0.5rem;
+      width: 1rem;
+      height: 1rem;
     }
-    .btn-submit { width:100%;padding:0.75rem;background:#6e0dd0;
-      border:none;border-radius:8px;color:#fff;font-size:1rem;
-      font-weight:600;cursor:pointer;transition:background 0.2s;
+    .btn-submit {
+      width: 100%;
+      padding: 0.75rem;
+      background: #6e0dd0;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
     }
-    .btn-submit:disabled { background:#b089f3;cursor:not-allowed; }
+    .btn-submit:disabled { background: #b089f3; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -75,21 +119,28 @@
           </div>
         </label>
       </div>
+
       <div class="checkbox-group">
         <label><input type="checkbox" id="age" required /> I am over 18 years old</label>
         <label><input type="checkbox" id="tc" required /> I agree to the <a href="/terms.html" target="_blank">Terms &amp; Conditions</a></label>
       </div>
+
       <button type="submit" class="btn-submit" id="start-btn" disabled>Enter Chat</button>
     </form>
   </div>
+
   <script>
     const form = document.getElementById('entry-form');
     const btn = document.getElementById('start-btn');
-    form.addEventListener('change', () => btn.disabled = !form.checkValidity());
+    form.addEventListener('change', () => {
+      btn.disabled = !form.checkValidity();
+    });
     form.addEventListener('submit', e => {
       e.preventDefault();
-      // store in session and go to chat
-      sessionStorage.setItem('gender', form.gender.value);
+      // store gender in sessionStorage
+      const gender = form.gender.value;
+      sessionStorage.setItem('gender', gender);
+      // redirect without exposing query
       window.location.href = '/chat';
     });
   </script>

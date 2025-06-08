@@ -1,125 +1,165 @@
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; height: 100%; }
-body { font-family: Arial, sans-serif; background: #f2f2f2; }
-
-#container {
-  display: flex;
-  width: 100vw;
-  height: 100vh;
+/* Reset & base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
-
-#video-column {
+body, html {
+  height: 100%;
+  font-family: sans-serif;
   display: flex;
   flex-direction: column;
 }
 
+/* Header */
+header {
+  background: #4A90E2;
+  color: #fff;
+  text-align: center;
+  padding: 0.75rem;
+}
+header h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+header p {
+  opacity: 0.9;
+}
+
+/* Main container: flex row, grows to fill available space */
+#container {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Video column */
+#video-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  /* fixed width to avoid overlap */
+  width: 320px;
+  flex-shrink: 0;
+}
 .video-container {
   position: relative;
+}
+.video-container video {
   width: 300px;
   height: 200px;
   background: #000;
-  margin: 4px;
-}
-
-.video-container video {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
+  border-radius: 4px;
 }
-
-#add-friend {
+.video-container button {
   position: absolute;
   bottom: 8px;
-  left: 8px;
-  background: #4285f4;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.6);
   color: #fff;
   border: none;
-  padding: 6px 10px;
-  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
   cursor: pointer;
 }
 
+/* Chat panel */
 #chat-panel {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #fafafa;
+  padding: 0.5rem;
   border-left: 1px solid #ddd;
 }
-
-#header {
-  padding: 12px;
-  font-size: 0.95em;
-  background: #fff;
-  border-bottom: 1px solid #ddd;
+#chat-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  margin-bottom: 0.5rem;
 }
-
 #status {
-  padding: 10px;
-  text-align: center;
-  color: #666;
+  font-style: italic;
+  margin-bottom: 0.5rem;
 }
-
 #messages {
   flex: 1;
-  padding: 10px;
   overflow-y: auto;
+  padding-right: 0.25rem;
 }
-
 .message {
-  margin-bottom: 8px;
-  padding: 6px 10px;
+  max-width: 80%;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
   border-radius: 4px;
-  background: #e0e0e0;
 }
-
 .message.self {
-  background: #d1ffd6;
+  background: #DCF8C6;
   align-self: flex-end;
 }
-
+.message.other {
+  background: #F1F0F0;
+  align-self: flex-start;
+}
 #controls {
   display: flex;
-  padding: 10px;
-  border-top: 1px solid #ddd;
-  gap: 8px;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
 }
-
-#input {
+#controls input {
   flex: 1;
-  padding: 8px;
+  padding: 0.5rem;
   border: 1px solid #ccc;
-  border-radius: 4px;
-  outline: none;
+  border-radius: 3px;
 }
-
-#send-btn, #next-btn {
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  background: #fff;
-  border-radius: 4px;
+#controls button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: #4A90E2;
+  color: #fff;
+  border-radius: 3px;
   cursor: pointer;
 }
+#controls button:disabled {
+  background: #bbb;
+  cursor: not-allowed;
+}
 
-@media (max-width: 768px) {
+/* Footer */
+footer {
+  background: #f5f5f5;
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 0.85rem;
+}
+footer a {
+  color: #4A90E2;
+  text-decoration: none;
+  margin: 0 0.25rem;
+}
+footer a:hover {
+  text-decoration: underline;
+}
+
+/* Mobile (narrow) layout */
+@media (max-width: 600px) {
   #container {
     flex-direction: column;
-    height: 100vh;
   }
   #video-column {
     flex-direction: row;
-    overflow-x: auto;
+    width: 100%;
+    justify-content: space-around;
   }
-  .video-container {
-    flex: none;
-    width: 45%;
+  .video-container video {
+    width: calc(50vw - 1rem);
     height: auto;
   }
   #chat-panel {
-    flex: none;
-    height: auto;
+    border-left: none;
+    border-top: 1px solid #ddd;
+    margin-top: 0.5rem;
   }
 }

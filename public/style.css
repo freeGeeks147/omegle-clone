@@ -1,19 +1,29 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width: 100%; height: 100%; }
-body { font-family: Arial, sans-serif; display: flex; align-items: center; justify-content: center; background: #fafafa; }
-#wrapper { display: flex; width: 100%; height: 100%; max-width: 900px; max-height: 600px; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-#video-chat { flex: 2; display: flex; flex-direction: column; background: #000; }
-#video-chat video { flex: 1; width: 100%; object-fit: cover; }
-#chat-panel { flex: 1; display: flex; flex-direction: column; border-left: 1px solid #ddd; }
-#status { padding: 10px; text-align: center; color: #666; }
-#messages { flex: 1; padding: 10px; overflow-y: auto; background: #f9f9f9; }
+body { font-family: Arial, sans-serif; background: #f2f2f2; display: flex; justify-content: center; align-items: center; }
+#container { display: flex; width: 100%; max-width: 1000px; height: 90vh; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+/* Video column */
+#video-column { display: flex; flex-direction: column; flex: 2; background: #000; }
+.video-container { position: relative; flex: 1; }
+.video-container video { width: 100%; height: 100%; object-fit: cover; }
+#add-friend { position: absolute; bottom: 10px; left: 10px; background: #4285f4; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
+
+/* Chat panel */
+#chat-panel { flex: 1; display: flex; flex-direction: column; }
+#header { padding: 12px; background: #fff; border-bottom: 1px solid #ddd; }
+#user-info { font-size: 0.9em; color: #333; }
+#status { padding: 10px; font-size: 0.95em; color: #666; text-align: center; }
+#messages { flex: 1; padding: 10px; overflow-y: auto; background: #fafafa; }
 .message { margin-bottom: 8px; padding: 6px 10px; border-radius: 4px; background: #e0e0e0; }
 .message.self { background: #d1ffd6; align-self: flex-end; }
-#input { border: none; border-top: 1px solid #ddd; padding: 12px; font-size: 1em; outline: none; width: 100%; }
+#controls { display: flex; padding: 10px; border-top: 1px solid #ddd; }
+#input { flex: 1; border: 1px solid #ccc; border-radius: 4px; padding: 8px; font-size: 1em; }
+#next-btn { margin-left: 8px; background: #fff; border: 1px solid #ccc; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
 
-/* Responsive */
+/* Responsive for mobile */
 @media (max-width: 768px) {
-  #wrapper { flex-direction: column; max-width: 100%; max-height: 100%; }
-  #video-chat { flex: 3; }
-  #chat-panel { flex: 2; border-left: none; border-top: 1px solid #ddd; }
+  #container { flex-direction: column-reverse; height: auto; max-height: 100vh; }
+  #video-column { flex: none; height: 50vh; }
+  #chat-panel { flex: none; height: 50vh; }
 }

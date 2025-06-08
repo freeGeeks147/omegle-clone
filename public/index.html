@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Omegle Clone</title>
+</head>
+<body>
+  <div id="status">Connecting...</div>
+  <div id="chat" style="display:none;">
+    <div id="messages" style="height:300px;overflow:auto;border:1px solid #ccc;padding:5px;margin-bottom:10px;"></div>
+    <input id="input" autocomplete="off" placeholder="Type a message..." style="width:80%;padding:5px;" />
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

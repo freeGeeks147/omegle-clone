@@ -9,15 +9,11 @@ const io = new Server(server);
 let waiting = null;
 
 io.on('connection', socket => {
-  console.log('Connected:', socket.id);
   if (waiting) {
     socket.partner = waiting;
     waiting.partner = socket;
-    waiting.emit('paired');
-    socket.emit('paired');
-    // start video: initiator flag
-    waiting.emit('startVideo', { initiator: false });
-    socket.emit('startVideo', { initiator: true });
+    waiting.emit('start', { initiator: false });
+    socket.emit('start', { initiator: true });
     waiting = null;
   } else {
     waiting = socket;
@@ -33,12 +29,10 @@ io.on('connection', socket => {
   });
 
   socket.on('disconnect', () => {
-    console.log('Disconnected:', socket.id);
     if (socket.partner) socket.partner.emit('partner-disconnected');
     if (waiting === socket) waiting = null;
   });
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Listening on ${PORT}`));
+server.listen(process.env.PORT || 3000);

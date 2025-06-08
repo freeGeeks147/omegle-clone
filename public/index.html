@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,12 +17,10 @@
 
     <div id="video-column">
       <div class="video-container">
-        <!-- remote stream: controls ON, starts unmuted -->
         <video id="remoteVideo" autoplay playsinline controls></video>
         <button id="add-friend">Add Friend</button>
       </div>
       <div class="video-container">
-        <!-- local preview: muted so you don't echo -->
         <video id="localVideo" autoplay playsinline muted controls></video>
       </div>
     </div>
@@ -29,8 +28,7 @@
     <div id="chat-panel">
       <div id="chat-header">
         <span>Meet someone new! 🌐🎥</span>
-        <label for="volume-slider">🔊</label>
-        <input id="volume-slider" type="range" min="0" max="1" step="0.01" value="1">
+        <!-- volume slider removed -->
       </div>
       <div id="status">Connecting...</div>
       <div id="messages"></div>

@@ -97,10 +97,14 @@ document.addEventListener('DOMContentLoaded', () => {
       partnerInfo.innerText   = `${icon} ${partner.gender}, from ${partner.location}`;
       partnerInfo.style.display = 'block';
 
-      // 1) getUserMedia
+      // 1) getUserMedia with reduced load (360p @ 15fps)
       try {
         localStream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 640, height: 480, frameRate:{ max:25 } },
+          video: {
+            width:  { max: 640 },
+            height: { max: 360 },
+            frameRate: { max: 15 }
+          },
           audio: true
         });
       } catch (err) {
@@ -111,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
       localVideo.srcObject = localStream;
       localVideo.muted     = true;
 
-      // 2) remote audio volume
+      // 2) remote audio volume control
       volSlider.addEventListener('input', () => {
         remoteVideo.volume = parseFloat(volSlider.value);
       });
@@ -124,18 +128,44 @@ document.addEventListener('DOMContentLoaded', () => {
         muteBtn.textContent = micOn ? '🎙️' : '🔇';
       });
 
-      // 4) build RTCPeerConnection
+      // 4) build RTCPeerConnection & add tracks
       pc = new RTCPeerConnection(rtcConfig);
       localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
 
+      // 5) force hardware H.264 on mobile browsers
+      const h264Codecs = RTCRtpSender.getCapabilities('video')
+        .codecs.filter(c => c.mimeType === 'video/H264');
+      pc.getTransceivers().forEach(tr => {
+        if (tr.sender.track.kind === 'video') {
+          tr.setCodecPreferences(h264Codecs);
+        }
+      });
+
+      // 6) throttle bitrate & downscale extra
+      const videoSender = pc.getSenders()
+        .find(s => s.track && s.track.kind === 'video');
+      if (videoSender) {
+        const params = videoSender.getParameters();
+        params.encodings = [{
+          maxBitrate: 200_000,       // ~200 kbps
+          scaleResolutionDownBy: 2    // half again: ~320×180
+        }];
+        await videoSender.setParameters(params);
+      }
+
+      // 7) set up ICE candidate handling
+      pc.onicecandidate = e => {
+        if (e.candidate) socket.emit('signal', { candidate: e.candidate });
+      };
+
+      // 8) handle incoming tracks
       pc.ontrack = evt => {
-        // send every incoming track into a MediaStream for remoteVideo
         const remoteStream = remoteVideo.srcObject || new MediaStream();
         evt.streams[0].getTracks().forEach(t => remoteStream.addTrack(t));
         remoteVideo.srcObject = remoteStream;
       };
-      pc.onicecandidate = e => e.candidate && socket.emit('signal', { candidate: e.candidate });
 
+      // 9) signaling handler
       socket.on('signal', async data => {
         if (data.sdp) {
           await pc.setRemoteDescription(data.sdp);
@@ -149,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      // 5) if I’m the initiator, kick off the offer
+      // 10) initiator sends offer
       if (initiator) {
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
